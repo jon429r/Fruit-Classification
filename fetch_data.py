@@ -1,6 +1,7 @@
 import kagglehub
 import shutil
 import os
+from py_runner import py_runner
 
 # Download latest version
 path = kagglehub.dataset_download("utkarshsaxenadn/fruits-classification")
@@ -13,6 +14,6 @@ shutil.move("1/Fruits Classification", "./Fruits_Classification")
 os.rmdir("1")
 
 # run resplit_data.py
-os.system("python3 resplit_data.py")
+py_runner.py_run("resplit_data.py")
 
 print("Path to dataset files: ./Fruits_Classification")
