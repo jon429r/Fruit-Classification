@@ -14,6 +14,13 @@ shutil.move("1/Fruits Classification", "./Fruits_Classification")
 os.rmdir("1")
 
 # run resplit_data.py
-py_run("resplit_data.py")
+exitcode, std_out, std_error = py_run("resplit_data.py")
+
+if exitcode != 0:
+    print("Error in resplit_data.py")
+    print(std_error)
+else:
+    print("Data fetched successfully")
+    print(std_out)
 
 print("Path to dataset files: ./Fruits_Classification")
