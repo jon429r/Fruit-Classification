@@ -1,5 +1,7 @@
 #pytorch weight files
 *.pth
+# dataset files
+Fruits_Classification
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
