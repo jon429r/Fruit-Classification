@@ -1,4 +1,6 @@
 import torch
+import json
+import os
 import torch.nn as nn
 import torch.optim as optim
 import argparse
@@ -14,14 +16,26 @@ parser = argparse.ArgumentParser(
     description="Fruit Image Classification with Simple CNN"
 )
 
-parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
-parser.add_argument("--lr", type=float, default=0.0001, help="Learning rate")
 parser.add_argument(
-    "--batch_size", type=int, default=32, help="Batch size for training"
+    "--epochs", type=int, default=10, help="Number of training epochs -> Default: 10"
+)
+parser.add_argument(
+    "--lr", type=float, default=0.0001, help="Learning rate -> Default: 0.0001"
+)
+parser.add_argument(
+    "--batch_size", type=int, default=32, help="Batch size for training -> Default: 32"
 )
 
-parser.add_argument("--train", action="store_true", help="Enable training mode")
-parser.add_argument("--save", action="store_true", help="Save the model")
+parser.add_argument(
+    "--train", action="store_true", help="Enable training mode -> Default: False"
+)
+parser.add_argument(
+    "--save", action="store_true", help="Save the model -> Default: False"
+)
+
+parser.add_argument(
+    "--graph", action="store_true", help="Plot the graph -> Default: False"
+)
 
 args = parser.parse_args()
 
@@ -90,7 +104,8 @@ def train_model(train_loader, model, criterion, optimizer, num_epochs, device):
         )
 
     # Plot learning curves
-    plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
+    if args.graph:
+        plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
 
 
 def plot_learning_curves(losses, accuracies, num_epochs):
@@ -157,9 +172,22 @@ def main(args):
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     # Apply data transformations
+
     transform = transforms.Compose(
         [
-            transforms.Resize((128, 128)),
+            transforms.RandomApply(
+                [
+                    transforms.ColorJitter(
+                        brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1
+                    )
+                ],
+                p=0.1,
+            ),
+            transforms.RandomHorizontalFlip(p=0.1),
+            transforms.RandomRotation(15),
+            transforms.RandomResizedCrop(
+                size=(128, 128), scale=(0.8, 1.0), ratio=(0.75, 1.33)
+            ),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -197,26 +225,45 @@ def main(args):
 
     val_acc = validate_model(valid_loader, model, device)
 
-    # chart test and val
-    results = tabulate.tabulate(
-        [
-            ["Epochs", args.epochs],
-            ["Learning rate", args.lr],
-            ["Batch Size", args.batch_size],
-            ["Test Accuracy", test_acc],
-            ["Validation Accuracy", val_acc],
-        ],
-        headers=["parameters", "Value"],
-    )
+    return (test_acc, val_acc)
 
-    print(results)
 
-    # append results to the end of the file
-    with open("results.txt", "a") as f:
-        f.write("\n")
-        f.write(results)
-        f.write("\n")
+def load_existing_results(filename="results.json"):
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            return json.load(f)
+    return {}
+
+
+# Function to update the best configuration
+def update_best_config(results, filename="results.json"):
+    existing_results = load_existing_results(filename)
+
+    best_existing_val_acc = existing_results.get("Validation Accuracy", 0)
+
+    if results["Validation Accuracy"] > best_existing_val_acc:
+        updated_results = {
+            "Best Configuration": results,
+            **existing_results,
+        }
+    else:
+        updated_results = existing_results
+        updated_results["Most Recent Configuration"] = results
+
+    with open(filename, "w") as f:
+        json.dump(updated_results, f, indent=4)
 
 
 if __name__ == "__main__":
-    main(args)
+    test_acc, val_acc = main(args)
+
+    results = {
+        "Epochs": args.epochs,
+        "Learning rate": args.lr,
+        "Batch Size": args.batch_size,
+        "Test Accuracy": test_acc,
+        "Validation Accuracy": val_acc,
+    }
+
+    # Update the best configuration
+    update_best_config(results)

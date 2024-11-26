@@ -94,3 +94,11 @@ Learning rate          0.001
 Batch Size            32
 Test Accuracy         35.8
 Validation Accuracy   37.1
+
+parameters             Value
+-------------------  -------
+Epochs               20
+Learning rate         0.0001
+Batch Size           32
+Test Accuracy        38.4
+Validation Accuracy  43
