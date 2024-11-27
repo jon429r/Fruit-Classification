@@ -8,10 +8,9 @@ pip install -r requirements.txt
 ```
 
 # Data
-To get our data you will need to run `fetch_data.py` then run `resplit_data.py`
+To get our data you will need to run `fetch_data.py`.
 ```
 python fetch_data.py
-python resplit_data.py
 ```
 This will fetch the data from kaggle and adjust the split. The data was previously split at a 97 2 1 ratio but we adjust it to a 80 10 10 split.
 Once you have done this the data is ready for training our model.
