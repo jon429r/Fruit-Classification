@@ -39,6 +39,51 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+def load_model(weights_path):
+    """
+    Loads the pre-trained model from the given weights file.
+    """
+    model = SimpleCNN()
+    model.load_state_dict(torch.load(weights_path))
+    model.eval()  # Set the model to evaluation mode
+    return model
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels):
+        super(ChannelAttention, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // 4, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_channels // 4, in_channels, bias=False),
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_pooled = self.avg_pool(x).view(x.size(0), -1)
+        max_pooled = self.max_pool(x).view(x.size(0), -1)
+        avg_out = self.fc(avg_pooled)
+        max_out = self.fc(max_pooled)
+        out = avg_out + max_out
+        return self.sigmoid(out).view(x.size(0), x.size(1), 1, 1)
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(SpatialAttention, self).__init__()
+        self.conv1 = nn.Conv2d(
+            2, 1, kernel_size, padding=(kernel_size // 2), bias=False
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg_out = torch.mean(x, dim=1, keepdim=True)
+        max_out, _ = torch.max(x, dim=1, keepdim=True)
+        x = torch.cat([avg_out, max_out], dim=1)
+        x = self.conv1(x)
+        return self.sigmoid(x)
+
 
 class SimpleCNN(nn.Module):
     def __init__(self, num_classes=5):
@@ -53,13 +98,41 @@ class SimpleCNN(nn.Module):
             nn.BatchNorm2d(32),
             nn.ReLU(),
         )
+        self.conv3 = nn.Sequential(  # Additional convolutional block
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+        )
+        self.conv4 = nn.Sequential(  # Another convolutional block
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+        )
         self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(32 * 32 * 32, 128)
-        self.fc2 = nn.Linear(128, num_classes)
+        self.cam = ChannelAttention(128)  # Channel attention for 128 channels
+        self.sam = SpatialAttention()  # Spatial attention
+
+        # Adjust the fully connected layer size for the new output size after the additional layers
+        self.fc1 = nn.Linear(
+            128 * 8 * 8, 512
+        )  # 128 channels, 8x8 spatial size after pooling
+        self.fc2 = nn.Linear(512, num_classes)
 
     def forward(self, x):
-        x = self.pool(self.conv1(x))
-        x = self.pool(self.conv2(x))
+        x = self.pool(self.conv1(x))  # (N, 16, 64, 64)
+        x = self.pool(self.conv2(x))  # (N, 32, 32, 32)
+        x = self.pool(self.conv3(x))  # (N, 64, 16, 16)
+        x = self.pool(self.conv4(x))  # (N, 128, 8, 8)
+
+        # Apply Channel Attention
+        cam_out = self.cam(x)
+        x = x * cam_out  # Element-wise multiplication
+
+        # Apply Spatial Attention
+        sam_out = self.sam(x)
+        x = x * sam_out  # Element-wise multiplication
+
+        # Flatten and classify
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
@@ -224,6 +297,9 @@ def main(args):
     test_acc = test_model(test_loader, model, device)
 
     val_acc = validate_model(valid_loader, model, device)
+
+    print(f"Test Accuracy: {test_acc:.2f}%")
+    print(f"Validation Accuracy: {val_acc:.2f}%")
 
     return (test_acc, val_acc)
 
