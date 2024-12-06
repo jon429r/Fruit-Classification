@@ -93,10 +93,10 @@ class SimpleCNN(nn.Module):
         self.fc2 = nn.Linear(512, num_classes)
 
     def forward(self, x):
-        x = self.pool(self.conv1(x))  # (N, 16, 64, 64)
-        x = self.pool(self.conv2(x))  # (N, 32, 32, 32)
-        x = self.pool(self.conv3(x))  # (N, 64, 16, 16)
-        x = self.pool(self.conv4(x))  # (N, 128, 8, 8)
+        x = self.pool(F.relu(self.conv1(x)))  # (N, 16, 64, 64)
+        x = self.pool(F.relu(self.conv2(x)))  # (N, 32, 32, 32)
+        x = self.pool(F.relu(self.conv3(x)))  # (N, 64, 16, 16)
+        x = self.pool(F.relu(self.conv4(x)))  # (N, 128, 8, 8)
 
         # Apply Channel Attention
         cam_out = self.cam(x)
