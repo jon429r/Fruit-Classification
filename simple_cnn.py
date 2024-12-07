@@ -254,7 +254,7 @@ def main(args,model):
     else:
         # Attempt to load a pre-trained model
         try:
-            model.load_state_dict(torch.load("simple_cnn.pth"))
+            model.load_state_dict(torch.load(f"{args.model_name}.pth"))
             print("Pre-trained model loaded successfully.")
         except FileNotFoundError:
             print(
@@ -264,8 +264,8 @@ def main(args,model):
 
     # Save the model if `--save` is set
     if args.save:
-        torch.save(model.state_dict(), "simple_cnn.pth")
-        print("Model saved as 'simple_cnn.pth'.")
+        torch.save(model.state_dict(), f"{args.model_name}.pth")
+        print(f"Model saved as '{args.model_name}.pth'.")
 
     test_acc = test_model(test_loader, model, device)
 
