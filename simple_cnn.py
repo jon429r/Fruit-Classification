@@ -10,6 +10,7 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 import tabulate
 import matplotlib.pyplot as plt
+from Parser import FruitClassificationParser
 
 
 
@@ -207,9 +208,7 @@ def validate_model(valid_loader, model, device):
     return validation_acc
 
 
-def main(args):
-    model = SimpleCNN(num_classes=5)
-
+def main(args,model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     model = model.to(device)
@@ -303,43 +302,3 @@ def update_best_config(results, filename="results.json"):
     with open(filename, "w") as f:
         json.dump(updated_results, f, indent=4)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Fruit Image Classification with Simple CNN"
-    )
-
-    parser.add_argument(
-        "--epochs", type=int, default=10, help="Number of training epochs -> Default: 10"
-    )
-    parser.add_argument(
-        "--lr", type=float, default=0.0001, help="Learning rate -> Default: 0.0001"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=32, help="Batch size for training -> Default: 32"
-    )
-
-    parser.add_argument(
-        "--train", action="store_true", help="Enable training mode -> Default: False"
-    )
-    parser.add_argument(
-        "--save", action="store_true", help="Save the model -> Default: False"
-    )
-
-    parser.add_argument(
-        "--graph", action="store_true", help="Plot the graph -> Default: False"
-    )
-
-    args = parser.parse_args()
-    test_acc, val_acc = main(args)
-
-    results = {
-        "Epochs": args.epochs,
-        "Learning rate": args.lr,
-        "Batch Size": args.batch_size,
-        "Test Accuracy": test_acc,
-        "Validation Accuracy": val_acc,
-    }
-
-    # Update the best configuration
-    update_best_config(results)
