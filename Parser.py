@@ -8,6 +8,17 @@ class FruitClassificationParser:
         self._add_arguments()
 
     def _add_arguments(self):
+        
+        # Model name
+        self.parser.add_argument(
+            "--model_name",
+            type=str,
+            default="SimpleCNN",
+            choices=["SimpleCNN", "ResNet50","ResNet101","ResNet142", "AlexNet"],
+            help="Name of the model architecture to use -> Default: SimpleCNN",
+            required=False
+        )
+        
         # Training hyperparameters
         self.parser.add_argument(
             "--epochs", 
