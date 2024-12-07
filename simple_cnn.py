@@ -114,7 +114,7 @@ class SimpleCNN(nn.Module):
         return x
 
 
-def train_model(train_loader, model, criterion, optimizer, num_epochs, device):
+def train_model(train_loader, model, criterion, optimizer, num_epochs, graph, device):
     epoch_losses = []
     epoch_accuracies = []
 
@@ -152,7 +152,7 @@ def train_model(train_loader, model, criterion, optimizer, num_epochs, device):
         )
 
     # Plot learning curves
-    if args.graph:
+    if graph:
         plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
 
 
@@ -250,7 +250,7 @@ def main(args,model):
             )
 
         # Train the model
-        train_model(train_loader, model, criterion, optimizer, args.epochs, device)
+        train_model(train_loader, model, criterion, optimizer, args.epochs, args.graph, device)
     else:
         # Attempt to load a pre-trained model
         try:
