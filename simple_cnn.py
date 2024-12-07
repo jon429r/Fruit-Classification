@@ -114,10 +114,9 @@ class SimpleCNN(nn.Module):
         return x
 
 
-def train_model(train_loader, model, criterion, optimizer, num_epochs, graph, device):
+def train_model(train_loader, valid_loader, model, criterion, optimizer, num_epochs, graph, device):
     epoch_losses = []
     epoch_accuracies = []
-
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
@@ -141,20 +140,24 @@ def train_model(train_loader, model, criterion, optimizer, num_epochs, graph, de
             _, predicted = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+        
+        # Run validation for each epoch 
+        model.eval()
+        validation_acc = validate_model(valid_loader,model,device)
 
+            
         epoch_loss = running_loss / len(train_loader)
         epoch_acc = 100 * correct / total
         epoch_losses.append(epoch_loss)
         epoch_accuracies.append(epoch_acc)
 
         print(
-            f"Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.2f}%"
+            f"Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}, Train Acc. : {epoch_acc:.2f}%, Val Acc. : {validation_acc:.2f}%"
         )
 
     # Plot learning curves
     if graph:
         plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
-
 
 def plot_learning_curves(losses, accuracies, num_epochs):
     epochs = range(1, num_epochs + 1)
@@ -250,7 +253,7 @@ def main(args,model):
             )
 
         # Train the model
-        train_model(train_loader, model, criterion, optimizer, args.epochs, args.graph, device)
+        train_model(train_loader, valid_loader, model, criterion, optimizer, args.epochs, args.graph, device)
     else:
         # Attempt to load a pre-trained model
         try:
