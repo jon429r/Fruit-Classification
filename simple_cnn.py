@@ -270,6 +270,7 @@ def main(args,model):
         torch.save(model.state_dict(), f"{args.model_name}.pth")
         print(f"Model saved as '{args.model_name}.pth'.")
 
+    model.eval()
     test_acc = test_model(test_loader, model, device)
 
     val_acc = validate_model(valid_loader, model, device)

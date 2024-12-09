@@ -65,7 +65,7 @@ args = parser.parse_args()
 
 
 model_class=globals()[args.model_name]
-model=model_class()
+model=model_class(NUM_CLASSES)
 model.load_state_dict(torch.load(args.model_path,weights_only=True))
 
 # Define labels
