@@ -1,0 +1,9 @@
+{
+    "Best Configuration": {
+        "Epochs": 30,
+        "Learning rate": 0.0001,
+        "Batch Size": 16,
+        "Test Accuracy": 75.3,
+        "Validation Accuracy": 75.6
+    }
+}

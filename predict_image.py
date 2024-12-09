@@ -1,8 +1,12 @@
-from simple_cnn import SimpleCNN
+from simple_cnn import SimpleCNN,main,update_best_config
+from nets import AlexNet,ResNet50,ResNet101,ResNet152
 from PIL import Image
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 import argparse
 import torch
+
+NUM_CLASSES=5
 
 def load_and_preprocess_image(image_path):
     # Load image
@@ -41,7 +45,15 @@ parser.add_argument(
 
 # Add the model path argument
 parser.add_argument(
-        '-m', '--model_path',
+        '-p', '--model_path',
+        type=str,
+        required=True,
+        help='The models class'
+)
+
+# Add the model path argument
+parser.add_argument(
+        '-m', '--model_name',
         type=str,
         required=True,
         help='Path to the model weights file'
@@ -52,12 +64,12 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-
-# Load the trained model
-model=SimpleCNN()
+model_class=globals()[args.model_name]
+model=model_class()
 model.load_state_dict(torch.load(args.model_path,weights_only=True))
 
-#
+# Define labels
+labels=["Apple","Banana","Grape","Mango","Strawberry"]
 with torch.no_grad():
-    print(model(load_and_preprocess_image(args.image_path)))
-
+    outputs = F.sigmoid(model(load_and_preprocess_image(args.image_path)))
+    print(f"The model predicted that the image is an {labels[torch.argmax(outputs).item()]}")
