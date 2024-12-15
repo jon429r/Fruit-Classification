@@ -11,9 +11,7 @@ def load_and_preprocess_image(image_path):
     # Define preprocessing pipeline
     preprocess = transforms.Compose(
         [
-            transforms.Resize(
-                size=(128, 128),
-            ),
+            transforms.Resize(size=(128, 128)),  # Ensure the image is resized to 128x128
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -21,8 +19,8 @@ def load_and_preprocess_image(image_path):
     # Apply preprocessing
     image_tensor = preprocess(image)
     
-    # Add batch dimension
-    image_tensor = image_tensor.unsqueeze(0)  # Shape: [1, C, H, W]
+    # Add batch dimension (Shape: [1, C, H, W])
+    image_tensor = image_tensor.unsqueeze(0)
     
     return image_tensor
 
@@ -41,23 +39,35 @@ parser.add_argument(
 
 # Add the model path argument
 parser.add_argument(
-        '-m', '--model_path',
-        type=str,
-        required=True,
-        help='Path to the model weights file'
+    '-m', '--model_path',
+    type=str,
+    required=True,
+    help='Path to the model weights file'
 )
-
 
 # Parse arguments
 args = parser.parse_args()
 
-
-
 # Load the trained model
-model=SimpleCNN()
-model.load_state_dict(torch.load(args.model_path,weights_only=True))
+model = SimpleCNN(num_classes=5)  # Ensure you specify the number of classes
+model.load_state_dict(torch.load(args.model_path))  # Load the model weights
 
-#
+# Set the model to evaluation mode
+model.eval()
+
+# Preprocess the image and make predictions
+image_tensor = load_and_preprocess_image(args.image_path)
+
+# Send the image tensor to the same device as the model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+image_tensor = image_tensor.to(device)
+
+# Make prediction without tracking gradients
 with torch.no_grad():
-    print(model(load_and_preprocess_image(args.image_path)))
+    output = model(image_tensor)
+    _, predicted_class = torch.max(output, 1)  # Get the class with the highest score
+
+# Print the predicted class
+print(f"Predicted class: {predicted_class.item()}")
 
