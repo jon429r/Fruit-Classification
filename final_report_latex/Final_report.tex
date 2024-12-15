@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\usepackage{graphicx}
 \usepackage{cite}
 
 \title{A CNN Based Approach To Fruit Classification}
@@ -26,13 +26,13 @@ By training the CNN using python's torch \cite{paszke2019pytorch}  and torchvisi
 
 \section{Related Work}
 
-Classification tasks using convolutional neural networks (CNNs) have been explored quite a lot, providing a large amount of existing work to guide use in developing our own technques. While large-scale models like those trained on ImageNet may be overly complex for this task, they offer valuable insights that can assist in our approach.
+Classification tasks using convolutional neural networks (CNNs) have been explored quite a lot, providing a large amount of existing work to guide use in developing our own technques. While large-scale models like those trained on ImageNet \cite{krizhevsky2012imagenet} may be overly complex for this task, they offer valuable insights that can assist in our approach.
 
 \subsection*{ImageNet}
 ImageNet is arguably the most comprehensive hand-labeled image dataset and has been a staple in the computer vision community since its introduction in 2009. Its vast scale and diversity have made it a benchmark for image classification tasks.
 
 \subsection*{AlexNet}
-AlexNet \cite{krizhevsky2012imagenet}, a groundbreaking CNN architecture, achieved a top-5 error rate of 15.3\% on the ImageNet dataset. Its success paved the way for further research into CNN architectures and their applications in image classification.
+AlexNet, a groundbreaking CNN architecture, achieved a top-5 error rate of 15.3\% on the ImageNet dataset. Its success paved the way for further research into CNN architectures and their applications in image classification.
 
 \subsection*{Cat and Dog Classification}
 The task of classifying cats and dogs has become iconic in CNN research. This problem has inspired countless tutorials and serves as a foundational example for extending CNN-based approaches to other classification tasks, including fruit classification.
@@ -49,7 +49,7 @@ The proposed CNN model consists of the following components:
 
 \begin{itemize}
     \item \textbf{Convolutional Layers:} Four convolutional layers are used to extract hierarchical features from the input images, progressively capturing patterns like edges, textures, and object details.
-    \item \textbf{Pooling Layer:} A max-pooling layer is applied after each convolutional block to reduce spatial dimensions while retaining essential information, thereby minimizing computational overhead.
+    \item \textbf{Pooling Layer:} A max-pooling layer is applied after each convolutional block to reduce spatial dimensions while retaining essential information, minimizing computational overhead.
     \item \textbf{Channel Attention Mechanism:} Enhances feature extraction by emphasizing the most relevant channels, helping the model focus on critical features specific to each fruit class.
     \item \textbf{Spatial Attention Mechanism:} Captures spatial dependencies within feature maps, improving the model's ability to localize distinguishing areas in the images.
     \item \textbf{Fully Connected Layers:} Two fully connected layers are employed for final classification, transforming the learned feature representations into fruit class probabilities.
@@ -58,20 +58,20 @@ The proposed CNN model consists of the following components:
 This architecture leverages a combination of convolutional operations, attention mechanisms, and fully connected layers to achieve high accuracy and robust performance for the fruit classification task.
 
 \subsubsection{Channel Attention (CAM)}
-The Channel Attention mechanism computes the importance of individual feature channels. By applying adaptive pooling and fully connected layers, it identifies and emphasizes the most relevant channels, improving the network's ability to discern subtle variations between fruit categories.
+The Channel Attention mechanism computes the importance of individual feature channels. By applying adaptive pooling and fully connected layers, it identifies and emphasizes the most relevant channels, improving the network's ability to find small variations between fruit categories.
 
 \subsubsection{Spatial Attention (SAM)}
-The Spatial Attention mechanism enhances the model's focus on specific regions within the input image. It utilizes convolution operations over pooled feature maps to concentrate on important areas, such as fruit boundaries, ensuring significant features are prioritized during classification.
+The Spatial Attention mechanism enhances the model's focus on specific regions within the input image. It utilizes convolution operations over pooled feature maps to concentrate on important areas, such as fruit boundaries, making sure significant features are prioritized during classification.
 
 \subsection{Training Techniques}
-Our training pipeline employs advanced data augmentation techniques to enhance generalization, including random color jittering, rotations, and resizing. The key components of the training loop are as follows:
+Our training loop ensures that our model learns effectively from the dataset and is robust and accurrate within the variations in the dataset. Key techniques include:
 \begin{itemize}
     \item \textbf{Loss Function:} Cross-entropy loss is used for multi-class classification.
     \item \textbf{Optimizer:} Adam optimizer ensures efficient convergence.
-    \item \textbf{Data Augmentation:} Techniques such as random horizontal flips, rotations, and normalized pixel values simulate diverse real-world scenarios.
+    \item \textbf{Data Augmentation:} Techniques such as random horizontal flips, rotations, and normalized pixel values simulate diverse real-world scenarios to ensure robustness.
 \end{itemize}
 
-By integrating attention mechanisms into our CNN architecture, we achieve a robust and scalable fruit classification system, capable of handling diverse datasets and real-world scenarios with high accuracy.
+By integrating attention mechanisms into our CNN architecture, we achieve a robust and scalable fruit classification system, capable of handling the diverse dataset and real-world scenarios with the highest accuracy possible.
 
 
 \section{Experiments}
@@ -79,7 +79,7 @@ By integrating attention mechanisms into our CNN architecture, we achieve a robu
 \subsection{Initial Experimentation}
 Our initial experiment focused on training a CNN model on a diverse dataset of fruit images. The dataset included a variety of classes such as apples, bananas, strawberries, mangos, and grapes. Additionally, the dataset contained both real and cartoon images of fruits, providing a challenging classification task due to variations in appearance, style, and complexity.
 
-To accelerate the training process and improve performance, we utilized a GPU-accelerated environment. We began with a simple CNN architecture and progressively introduced attention mechanisms, such as channel and spatial attention, to enhance the model's ability to distinguish between fruit classes. Subsequently, we added additional convolutional layers and increased the number of filters to improve feature extraction capabilities.
+To accelerate the training process and improve performance, we utilized a GPU-accelerated environment. We began with a simple CNN architecture and progressively introduced attention mechanisms, such as channel and spatial attention, to enhance the model's ability to distinguish between fruit classes. later, we added additional convolutional layers and increased the number of filters to improve the models feature extraction ability.
 
 \subsection{Hyperparameter Tuning and Data Augmentation}
 To optimize the performance of our model, we conducted experiments with various hyperparameters, including:
@@ -89,13 +89,14 @@ To optimize the performance of our model, we conducted experiments with various 
     \item \textbf{Number of Epochs:} Experimented with longer training periods to balance underfitting and overfitting.
 \end{itemize}
 
-We also applied data augmentation techniques, such as random rotation, flipping, resizing, and color jittering, to improve the model's generalization to unseen data. These experiments were crucial in identifying the optimal configuration for our CNN-based fruit classification task.
+These experiments were crucial in identifying the best configuration for our CNN-based fruit classification task.
 
 \subsection{Comparative Analysis with Established Architectures}
 To evaluate the performance of our model against well-established architectures, we cloned and trained models such as AlexNet and ResNet50 using the same dataset and hyperparameters for consistency. The results are summarized below:
 \begin{itemize}
     \item \texttt{AlexNet}: Achieved a test accuracy of 74.90\% and a validation accuracy of 76.90\%.
     \item \texttt{ResNet50}: Achieved a test accuracy of 75.30\% and a validation accuracy of 75.60\%.
+    \item \texttt{Our Model}: Achieved a test accuracy of 71.40\% and a validation accuracy of 71.70\%.
 \end{itemize}
 
 These results demonstrate that our custom CNN architecture, while simpler, performs competitively against advanced architectures when trained on the same dataset. 
@@ -134,13 +135,11 @@ Our model demonstrated promising results with efficient training times when leve
 
 \section{Conclusion}
 
-In this work, we presented a CNN-based approach to fruit classification, leveraging custom architecture designs, attention mechanisms, and data augmentation techniques to improve accuracy and generalization. The combination of channel and spatial attention mechanisms proved effective in enhancing the model's ability to extract and focus on relevant features, leading to competitive results compared to established architectures like AlexNet and ResNet50.
+In this work, we presented a CNN-based approach to fruit classification, taking advantage of custom architecture designs, attention mechanisms, and data augmentation techniques to improve accuracy and robustness. The combination of channel and spatial attention mechanisms proved to be effective in enhancing the model's ability to extract and focus on relevant features, leading to comparable results when compared to established architectures like AlexNet and ResNet50.
 
-Through systematic experimentation, we optimized hyperparameters and demonstrated the importance of iterative refinement in achieving robust performance. Our model achieved a test accuracy of 71.40\% and a validation accuracy of 71.70\% with relatively efficient training times, particularly when utilizing GPU acceleration. These results validate the capability of our CNN architecture to handle the challenges of diverse and complex datasets.
+Through experimentation, we optimized hyperparameters and demonstrated the importance of effective refinement in achieving robust performance. Our model achieved a test accuracy of 71.40\% and a validation accuracy of 71.70\% with relatively efficient training times, particularly when utilizing GPU acceleration. These results validate the capability of our CNN architecture to handle the challenges of diverse and complex datasets.
 
-Additionally, our comparative analysis with AlexNet and ResNet50 \cite{he2016deep} highlighted the strengths of our lightweight yet effective model. While advanced architectures offer marginally higher accuracy, our approach balances computational efficiency and classification performance, making it a viable solution for real-world applications in agriculture, retail, and beyond.
-
-Future work will focus on further enhancing the model by exploring additional data augmentation techniques, employing larger and more diverse datasets, and integrating advanced neural network components like transformer blocks. These improvements aim to push the boundaries of classification accuracy and scalability, enabling broader applications of CNN-based fruit classification systems.
+Additionally, our comparative analysis with AlexNet and ResNet50 \cite{he2016deep} highlighted the strengths of our lightweight yet effective model. While advanced architectures offer higher accuracy, our approach balances computational efficiency and classification performance, making it a viable solution for real-world applications in agriculture, retail, and more.
 
 Overall, our work underscores the potential of convolutional neural networks in addressing practical image classification challenges, offering a solid foundation for ongoing research and development in this domain.
 
@@ -149,6 +148,19 @@ Overall, our work underscores the potential of convolutional neural networks in 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
+\newpage
 \section{Evaluation Form}
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Name} & \textbf{Average} \\ \hline
+Jonathan Day & 100\% \\ \hline
+Jimmy Gore & 100\% \\ \hline
+\end{tabular}
+\caption{Both participants had equal contributions to the project and worked effectively to achevie the highest overall accuracy out of all teams that took on this project.}
+\end{table}
 
 \end{document}
