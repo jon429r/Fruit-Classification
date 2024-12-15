@@ -4,7 +4,7 @@ from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 
 
-def get_data_loaders(batch_size, transform=None):
+def get_data_loaders(batch_size, transform=None,shuffles:list[bool]=[True,False,False]):
     """
     Args:
     - batch_size (int): Batch size for DataLoader.
@@ -32,8 +32,8 @@ def get_data_loaders(batch_size, transform=None):
     valid_dataset = ImageFolder(root=valid_dir, transform=val_transform)
     test_dataset = ImageFolder(root=test_dir, transform=val_transform)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffles[0])
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=shuffles[1])
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=shuffles[2])
 
     return train_loader, valid_loader, test_loader

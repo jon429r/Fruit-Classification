@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import tabulate
 import matplotlib.pyplot as plt
 import numpy as np
+from Parser import FruitClassificationParser
 
 
 
@@ -118,15 +119,11 @@ class SimpleCNN(nn.Module):
 
 
     def forward(self, x):
-        print(f"Input shape: {x.shape}")
-        x = self.pool(self.conv1(x))  # (N, 16, 64, 64)
-        print(f"After conv1: {x.shape}")
-        x = self.pool(self.conv2(x))  # (N, 32, 32, 32)
-        print(f"After conv2: {x.shape}")
-        x = self.pool(self.conv3(x))  # (N, 64, 16, 16)
-        print(f"After conv3: {x.shape}")
-        x = self.pool(self.conv4(x))  # (N, 128, 8, 8)
-        print(f"After conv4: {x.shape}")
+
+        x = self.pool(F.relu(self.conv1(x)))  # (N, 16, 64, 64)
+        x = self.pool(F.relu(self.conv2(x)))  # (N, 32, 32, 32)
+        x = self.pool(F.relu(self.conv3(x)))  # (N, 64, 16, 16)
+        x = self.pool(F.relu(self.conv4(x)))  # (N, 128, 8, 8)
 
         # Apply Channel Attention
         cam_out = self.cam(x)
@@ -146,8 +143,7 @@ class SimpleCNN(nn.Module):
         return x
 
 
-
-def train_model(train_loader, model, criterion, optimizer, num_epochs, device):
+def train_model(train_loader, model, criterion, optimizer, num_epochs, graph, device):
     epoch_losses = []
     epoch_accuracies = []
 
@@ -185,7 +181,7 @@ def train_model(train_loader, model, criterion, optimizer, num_epochs, device):
         )
 
     # Plot learning curves
-    if args.graph:
+    if graph:
         plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
 
 
@@ -241,9 +237,7 @@ def validate_model(valid_loader, model, device):
     return validation_acc
 
 
-def main(args):
-    model = SimpleCNN(num_classes=5)
-
+def main(args,model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     model = model.to(device)
@@ -285,11 +279,11 @@ def main(args):
             )
 
         # Train the model
-        train_model(train_loader, model, criterion, optimizer, args.epochs, device)
+        train_model(train_loader, model, criterion, optimizer, args.epochs, args.graph, device)
     else:
         # Attempt to load a pre-trained model
         try:
-            model.load_state_dict(torch.load("simple_cnn.pth"))
+            model.load_state_dict(torch.load(f"{args.model_name}.pth"))
             print("Pre-trained model loaded successfully.")
         except FileNotFoundError:
             print(
@@ -299,8 +293,8 @@ def main(args):
 
     # Save the model if `--save` is set
     if args.save:
-        torch.save(model.state_dict(), "simple_cnn.pth")
-        print("Model saved as 'simple_cnn.pth'.")
+        torch.save(model.state_dict(), f"{args.model_name}.pth")
+        print(f"Model saved as '{args.model_name}.pth'.")
 
     test_acc = test_model(test_loader, model, device)
 
@@ -339,43 +333,3 @@ def update_best_config(results, filename="results.json"):
     with open(filename, "w") as f:
         json.dump(updated_results, f, indent=4)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Fruit Image Classification with Simple CNN"
-    )
-
-    parser.add_argument(
-        "--epochs", type=int, default=10, help="Number of training epochs -> Default: 10"
-    )
-    parser.add_argument(
-        "--lr", type=float, default=0.0001, help="Learning rate -> Default: 0.0001"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=32, help="Batch size for training -> Default: 32"
-    )
-
-    parser.add_argument(
-        "--train", action="store_true", help="Enable training mode -> Default: False"
-    )
-    parser.add_argument(
-        "--save", action="store_true", help="Save the model -> Default: False"
-    )
-
-    parser.add_argument(
-        "--graph", action="store_true", help="Plot the graph -> Default: False"
-    )
-
-    args = parser.parse_args()
-    test_acc, val_acc = main(args)
-
-    results = {
-        "Epochs": args.epochs,
-        "Learning rate": args.lr,
-        "Batch Size": args.batch_size,
-        "Test Accuracy": test_acc,
-        "Validation Accuracy": val_acc,
-    }
-
-    # Update the best configuration
-    update_best_config(results)
