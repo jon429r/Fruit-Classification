@@ -15,9 +15,7 @@ def load_and_preprocess_image(image_path):
     # Define preprocessing pipeline
     preprocess = transforms.Compose(
         [
-            transforms.Resize(
-                size=(128, 128),
-            ),
+            transforms.Resize(size=(128, 128)),  # Ensure the image is resized to 128x128
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
@@ -25,8 +23,8 @@ def load_and_preprocess_image(image_path):
     # Apply preprocessing
     image_tensor = preprocess(image)
     
-    # Add batch dimension
-    image_tensor = image_tensor.unsqueeze(0)  # Shape: [1, C, H, W]
+    # Add batch dimension (Shape: [1, C, H, W])
+    image_tensor = image_tensor.unsqueeze(0)
     
     return image_tensor
 
@@ -59,9 +57,12 @@ parser.add_argument(
         help='Path to the model weights file'
 )
 
-
 # Parse arguments
 args = parser.parse_args()
+
+# Load the trained model
+model = SimpleCNN(num_classes=5)  # Ensure you specify the number of classes
+model.load_state_dict(torch.load(args.model_path))  # Load the model weights
 
 
 model_class=globals()[args.model_name]
@@ -73,3 +74,4 @@ labels=["Apple","Banana","Grape","Mango","Strawberry"]
 with torch.no_grad():
     outputs = F.sigmoid(model(load_and_preprocess_image(args.image_path)))
     print(f"The model predicted that the image is an {labels[torch.argmax(outputs).item()]}")
+

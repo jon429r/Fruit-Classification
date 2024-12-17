@@ -10,18 +10,42 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 import tabulate
 import matplotlib.pyplot as plt
+import numpy as np
 from Parser import FruitClassificationParser
 
 
+
+from sklearn.metrics import precision_recall_fscore_support
+
+def evaluate_model(model, data_loader, device):
+    model.eval()
+    all_preds = []
+    all_labels = []
+    with torch.no_grad():
+        for images, labels in data_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, preds = torch.max(outputs, 1)
+            all_preds.append(preds.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
+
+    all_preds = np.concatenate(all_preds)
+    all_labels = np.concatenate(all_labels)
+    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='weighted')
+    print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1-score: {f1:.4f}")
 
 def load_model(weights_path):
     """
     Loads the pre-trained model from the given weights file.
     """
+    if not os.path.exists(weights_path):
+        print(f"Error: {weights_path} does not exist.")
+        return None
     model = SimpleCNN()
     model.load_state_dict(torch.load(weights_path))
-    model.eval()  # Set the model to evaluation mode
+    model.eval()
     return model
+
 
 class ChannelAttention(nn.Module):
     def __init__(self, in_channels):
@@ -93,7 +117,9 @@ class SimpleCNN(nn.Module):
         )  # 128 channels, 8x8 spatial size after pooling
         self.fc2 = nn.Linear(512, num_classes)
 
+
     def forward(self, x):
+
         x = self.pool(F.relu(self.conv1(x)))  # (N, 16, 64, 64)
         x = self.pool(F.relu(self.conv2(x)))  # (N, 32, 32, 32)
         x = self.pool(F.relu(self.conv3(x)))  # (N, 64, 16, 16)
@@ -102,13 +128,16 @@ class SimpleCNN(nn.Module):
         # Apply Channel Attention
         cam_out = self.cam(x)
         x = x * cam_out  # Element-wise multiplication
+        print(f"After Channel Attention: {x.shape}")
 
         # Apply Spatial Attention
         sam_out = self.sam(x)
         x = x * sam_out  # Element-wise multiplication
+        print(f"After Spatial Attention: {x.shape}")
 
         # Flatten and classify
         x = torch.flatten(x, 1)
+        print(f"After flattening: {x.shape}")
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
@@ -277,6 +306,8 @@ def main(args,model):
 
     print(f"Test Accuracy: {test_acc:.2f}%")
     print(f"Validation Accuracy: {val_acc:.2f}%")
+
+    evaluate_model(model, test_loader, device)
 
     return (test_acc, val_acc)
 

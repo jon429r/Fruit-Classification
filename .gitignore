@@ -1,3 +1,13 @@
+#Latex files
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+
 #pytorch weight files
 *.pth
 # dataset files
