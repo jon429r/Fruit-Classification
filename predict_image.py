@@ -1,8 +1,12 @@
-from simple_cnn import SimpleCNN
+from simple_cnn import SimpleCNN,main,update_best_config
+from nets import AlexNet,ResNet50,ResNet101,ResNet152
 from PIL import Image
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 import argparse
 import torch
+
+NUM_CLASSES=5
 
 def load_and_preprocess_image(image_path):
     # Load image
@@ -39,10 +43,18 @@ parser.add_argument(
 
 # Add the model path argument
 parser.add_argument(
-    '-m', '--model_path',
-    type=str,
-    required=True,
-    help='Path to the model weights file'
+        '-p', '--model_path',
+        type=str,
+        required=True,
+        help='The models class'
+)
+
+# Add the model path argument
+parser.add_argument(
+        '-m', '--model_name',
+        type=str,
+        required=True,
+        help='Path to the model weights file'
 )
 
 # Parse arguments
@@ -52,22 +64,14 @@ args = parser.parse_args()
 model = SimpleCNN(num_classes=5)  # Ensure you specify the number of classes
 model.load_state_dict(torch.load(args.model_path))  # Load the model weights
 
-# Set the model to evaluation mode
-model.eval()
 
-# Preprocess the image and make predictions
-image_tensor = load_and_preprocess_image(args.image_path)
+model_class=globals()[args.model_name]
+model=model_class(NUM_CLASSES)
+model.load_state_dict(torch.load(args.model_path,weights_only=True))
 
-# Send the image tensor to the same device as the model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
-image_tensor = image_tensor.to(device)
-
-# Make prediction without tracking gradients
+# Define labels
+labels=["Apple","Banana","Grape","Mango","Strawberry"]
 with torch.no_grad():
-    output = model(image_tensor)
-    _, predicted_class = torch.max(output, 1)  # Get the class with the highest score
-
-# Print the predicted class
-print(f"Predicted class: {predicted_class.item()}")
+    outputs = F.sigmoid(model(load_and_preprocess_image(args.image_path)))
+    print(f"The model predicted that the image is an {labels[torch.argmax(outputs).item()]}")
 
