@@ -128,16 +128,16 @@ class SimpleCNN(nn.Module):
         # Apply Channel Attention
         cam_out = self.cam(x)
         x = x * cam_out  # Element-wise multiplication
-        print(f"After Channel Attention: {x.shape}")
+        # print(f"After Channel Attention: {x.shape}")
 
         # Apply Spatial Attention
         sam_out = self.sam(x)
         x = x * sam_out  # Element-wise multiplication
-        print(f"After Spatial Attention: {x.shape}")
+        # print(f"After Spatial Attention: {x.shape}")
 
         # Flatten and classify
         x = torch.flatten(x, 1)
-        print(f"After flattening: {x.shape}")
+        # print(f"After flattening: {x.shape}")
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
