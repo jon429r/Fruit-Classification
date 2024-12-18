@@ -51,9 +51,12 @@ class FruitClassificationParser:
             help="Save the model -> Default: False"
         )
         self.parser.add_argument(
-            "--graph", 
-            action="store_true", 
-            help="Plot the graph -> Default: False"
+            "--graph",
+            nargs='?',
+            const=True,
+            default=False,
+            type=str,
+            help="Plot the graphs. If a path is provided, saves the graphs to that location -> Default: False"
         )
 
     def parse_args(self):

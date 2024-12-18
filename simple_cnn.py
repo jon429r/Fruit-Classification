@@ -186,9 +186,9 @@ def train_model(train_loader, valid_loader, model, criterion, optimizer, num_epo
 
     # Plot learning curves
     if graph:
-        plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs)
+        plot_learning_curves(epoch_losses, epoch_accuracies, num_epochs,graph)
 
-def plot_learning_curves(losses, accuracies, num_epochs):
+def plot_learning_curves(losses, accuracies, num_epochs,graph):
     epochs = range(1, num_epochs + 1)
 
     # Plot Loss curve
@@ -209,7 +209,11 @@ def plot_learning_curves(losses, accuracies, num_epochs):
     plt.grid(True)
 
     plt.tight_layout()
-    plt.show()
+    
+    if type(graph)==str:
+        plt.savefig(graph)
+    else:   
+        plt.show()
 
 
 def test_model(test_loader, model, device):
