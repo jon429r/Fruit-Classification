@@ -12,15 +12,18 @@ import tabulate
 import matplotlib.pyplot as plt
 import numpy as np
 from Parser import FruitClassificationParser
-
-
-
+from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support
+import torch
+import numpy as np
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-def evaluate_model(model, data_loader, device):
-    model.eval()
+def evaluate_model(model, data_loader, device,conf_path=None):
     all_preds = []
     all_labels = []
+    
     with torch.no_grad():
         for images, labels in data_loader:
             images, labels = images.to(device), labels.to(device)
@@ -31,8 +34,35 @@ def evaluate_model(model, data_loader, device):
 
     all_preds = np.concatenate(all_preds)
     all_labels = np.concatenate(all_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='weighted')
+    
+    # Calculate metrics
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        all_labels, all_preds, average='weighted'
+    )
+    
+    class_names=["Apple","Banana","Grape","Mango","Strawberry"]
+    
+    if conf_path:
+        # Create confusion matrix
+        conf_matrix = confusion_matrix(all_labels, all_preds)
+        
+        # Plot confusion matrix
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(conf_matrix, 
+                    annot=True, 
+                    fmt='d',
+                    cmap='Blues',
+                    xticklabels=class_names,
+                    yticklabels=class_names)
+        plt.title(f'{model.__class__.__name__} Confusion Matrix')
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.savefig(conf_path)
+        
+    # Print metrics
     print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1-score: {f1:.4f}")
+    
+    
 
 def load_model(weights_path):
     """
@@ -311,7 +341,7 @@ def main(args,model):
     print(f"Test Accuracy: {test_acc:.2f}%")
     print(f"Validation Accuracy: {val_acc:.2f}%")
 
-    evaluate_model(model, test_loader, device)
+    evaluate_model(model, test_loader, device,conf_path=args.conf_matrix)
 
     return (test_acc, val_acc)
 

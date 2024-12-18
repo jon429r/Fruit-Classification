@@ -58,6 +58,12 @@ class FruitClassificationParser:
             type=str,
             help="Plot the graphs. If a path is provided, saves the graphs to that location -> Default: False"
         )
+        self.parser.add_argument(
+            "--conf_matrix",
+            type=str,
+            default=None,
+            help="Path to save the confusion matrix plot. If not provided, the matrix won't be saved -> Default: None"
+        )
 
     def parse_args(self):
         """Parse and return command line arguments."""
